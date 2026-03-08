@@ -38,7 +38,7 @@
                         status.innerText = "";
                         mostrarInterface(musica);
                         
-                        // FILTRO: Pega só o primeiro nome e remove siglas (MC, SP, etc)
+                        // FILTRO: Remove "MC", "Participações" e pega só o nome principal
                         const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP|feat|ft/gi, '').trim();
                         buscarLetraReal(artistaLimpo, musica.trackName);
                     } else {
@@ -49,7 +49,7 @@
         });
 
         function mostrarInterface(musica) {
-            // BUSCA: Adicionar "audio" ajuda a carregar versões sem bloqueio de direitos
+            // BUSCA: Adicionar "audio" ajuda a carregar versões "Topic" que não são bloqueadas
             const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " audio");
             conteudo.innerHTML = `
                 <div class="artist-card">
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="lyrics-container">
-                    <button class="btn-translation" onclick="alert('Tradução sendo processada...')">Ver Tradução</button>
+                    <button class="btn-translation" onclick="alert('Tradução em processamento...')">Ver Tradução</button>
                     <div id="textoLetra" style="white-space: pre-wrap; font-size: 16px;">Buscando letra oficial...</div>
                 </div>
             `;
@@ -73,7 +73,6 @@
 
         function buscarLetraReal(artista, musica) {
             const areaTexto = document.getElementById('textoLetra');
-            // Tentativa na API Lyrics.ovh com o nome limpo
             fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
             .then(res => res.json())
             .then(data => {
