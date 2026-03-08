@@ -2,34 +2,38 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - PORTAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SOM E LETRA</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        .search-area { padding: 10px; background: #121212; display: flex; gap: 10px; }
-        #frameBing { width: 100%; height: calc(100% - 120px); border: none; display: none; }
-        input { flex-grow: 1; padding: 12px; border-radius: 20px; border: none; background: #282828; color: white; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #121212; overflow: hidden; font-family: sans-serif; }
+        .nav-bar { padding: 10px; background: #1db954; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .search-area { padding: 15px; background: #121212; display: flex; gap: 8px; border-bottom: 1px solid #282828; }
+        input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
+        button { background: #1db954; border: none; border-radius: 8px; padding: 0 20px; color: white; font-weight: bold; cursor: pointer; }
+        #frameBing { width: 100%; height: calc(100% - 130px); border: none; background: white; }
     </style>
 </head>
 <body>
 
-    <header style="padding: 10px;">🎧 SOM E LETRA</header>
+    <div class="nav-bar">🎧 SOM E LETRA</div>
 
     <div class="search-area">
-        <input type="text" id="campoBusca" placeholder="Busque música ou artista...">
-        <button onclick="buscar()" style="background:#1db954; border:none; border-radius:20px; padding:0 20px; color:white; font-weight:bold;">IR</button>
+        <input type="text" id="campoBusca" placeholder="Música ou artista..." autocomplete="off">
+        <button onclick="buscar()">IR</button>
     </div>
 
-    <iframe id="frameBing"></iframe>
+    <iframe id="frameBing" src="about:blank"></iframe>
 
     <script>
         function buscar() {
             const termo = document.getElementById('campoBusca').value;
             if(!termo) return;
             const frame = document.getElementById('frameBing');
+            // Busca focada em vídeo e letra para o Bing entregar o resultado direto
             frame.src = "https://www.bing.com/search?q=" + encodeURIComponent(termo + " letra e vídeo");
-            frame.style.display = "block";
+            // Esconde o teclado no celular após a busca
+            document.activeElement.blur();
         }
 
         document.getElementById('campoBusca').addEventListener('keypress', function(e) {
