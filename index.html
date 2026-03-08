@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA</title>
+    <title>SOM E LETRA - PREMIUM</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
         body { background: #121212; color: white; font-family: sans-serif; margin: 0; }
-        .nav-bar { padding: 15px; background: #1db954; text-align: center; font-weight: bold; }
-        .search-area { padding: 15px; display: flex; gap: 8px; background: #181818; }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #282828; color: white; outline: none; }
-        button { background: #1db954; border: none; border-radius: 8px; padding: 0 20px; color: white; font-weight: bold; cursor: pointer; }
+        .nav-bar { padding: 15px; background: #1db954; text-align: center; font-weight: bold; font-size: 20px; }
+        .search-area { padding: 20px; display: flex; gap: 10px; background: #181818; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #282828; color: white; outline: none; }
+        button { background: #1db954; border: none; border-radius: 25px; padding: 0 25px; color: white; font-weight: bold; cursor: pointer; }
         
-        #playerContainer { width: 100%; display: none; background: #000; }
-        #playerContainer iframe { width: 100%; aspect-ratio: 16 / 9; border: none; }
+        /* Container do Player Oficial */
+        #video-placeholder { width: 100%; aspect-ratio: 16/9; display: none; background: #000; }
 
-        .lista-musicas { padding: 10px; }
-        .musica-card { display: flex; align-items: center; gap: 12px; padding: 10px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
-        .musica-card img { width: 90px; height: 60px; border-radius: 4px; object-fit: cover; }
-        .musica-titulo { font-weight: bold; font-size: 14px; }
+        .lista-musicas { padding: 15px; display: grid; gap: 10px; }
+        .musica-card { background: #181818; padding: 12px; border-radius: 10px; display: flex; align-items: center; gap: 15px; cursor: pointer; border: 1px solid transparent; }
+        .musica-card:active { background: #282828; border-color: #1db954; }
+        .musica-card img { width: 100px; height: 60px; border-radius: 5px; object-fit: cover; }
+        .musica-titulo { font-weight: bold; font-size: 14px; color: #fff; }
     </style>
 </head>
 <body>
@@ -25,35 +27,47 @@
     <div class="nav-bar">🎧 SOM E LETRA</div>
 
     <div class="search-area">
-        <input type="text" id="campoBusca" placeholder="Nome do artista ou música...">
-        <button onclick="pesquisar()">BUSCAR</button>
+        <input type="text" id="campoBusca" placeholder="Digite Djavan, Roberto Carlos..." autocomplete="off">
+        <button onclick="buscarMusicas()">BUSCAR</button>
     </div>
 
-    <div id="playerContainer"></div>
+    <div id="video-placeholder"></div>
+
     <div id="listaResultados" class="lista-musicas"></div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
-        async function pesquisar() {
+        let player;
+        
+        // Inicializa o player escondido
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('video-placeholder', {
+                height: '100%',
+                width: '100%',
+                playerVars: { 'autoplay': 1, 'modestbranding': 1, 'controls': 1, 'origin': window.location.origin }
+            });
+        }
+
+        async function buscarMusicas() {
             const termo = document.getElementById('campoBusca').value;
             if(!termo) return;
             
             const lista = document.getElementById('listaResultados');
-            const player = document.getElementById('playerContainer');
-            lista.innerHTML = "<p style='text-align:center'>Buscando músicas...</p>";
-            player.style.display = "none";
+            lista.innerHTML = "<p style='text-align:center'>Sintonizando lista de sucessos...</p>";
 
             try {
-                // Busca direta de vídeo (Ignora o visual do buscador)
+                // Busca limpa de vídeos
                 const res = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
                 
                 lista.innerHTML = "";
-                data.slice(0, 12).forEach(item => {
+                data.slice(0, 15).forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'musica-card';
                     div.onclick = () => {
-                        player.style.display = "block";
-                        player.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.videoId}?autoplay=1" allowfullscreen></iframe>`;
+                        document.getElementById('video-placeholder').style.display = "block";
+                        player.loadVideoById(item.videoId);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
                     div.innerHTML = `
