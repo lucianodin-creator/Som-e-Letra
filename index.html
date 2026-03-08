@@ -3,48 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - BUSCADOR</title>
+    <title>SOM E LETRA - PORTAL</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .instrucao {
-            color: #b3b3b3;
-            font-size: 14px;
-            margin-top: 20px;
-            text-align: center;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        .search-area { padding: 10px; background: #121212; display: flex; gap: 10px; }
+        #frameBing { width: 100%; height: calc(100% - 120px); border: none; display: none; }
+        input { flex-grow: 1; padding: 12px; border-radius: 20px; border: none; background: #282828; color: white; }
     </style>
 </head>
 <body>
 
-    <header>🎧 SOM E LETRA</header>
+    <header style="padding: 10px;">🎧 SOM E LETRA</header>
 
-    <div class="search-container">
-        <input type="text" id="campoBusca" placeholder="Digite Música ou Artista...">
-        <p class="instrucao">Pressione Enter para buscar letra e vídeo no Bing</p>
+    <div class="search-area">
+        <input type="text" id="campoBusca" placeholder="Busque música ou artista...">
+        <button onclick="buscar()" style="background:#1db954; border:none; border-radius:20px; padding:0 20px; color:white; font-weight:bold;">IR</button>
     </div>
 
-    <main class="main-content">
-        <div style="text-align: center; padding: 40px; color: #1db954;">
-            <p>O melhor som, a letra certa.</p>
-        </div>
-    </main>
-
-    <footer>Som e Letra © 2026</footer>
+    <iframe id="frameBing"></iframe>
 
     <script>
-        const campo = document.getElementById('campoBusca');
+        function buscar() {
+            const termo = document.getElementById('campoBusca').value;
+            if(!termo) return;
+            const frame = document.getElementById('frameBing');
+            frame.src = "https://www.bing.com/search?q=" + encodeURIComponent(termo + " letra e vídeo");
+            frame.style.display = "block";
+        }
 
-        campo.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const termo = this.value;
-                if(!termo) return;
-                
-                // O segredo: Busca no Bing forçando letra e vídeo
-                const urlBing = "https://www.bing.com/search?q=" + encodeURIComponent(termo + " letra e vídeo");
-                
-                // Abre na mesma aba para parecer que o site mudou de fase
-                window.location.href = urlBing;
-            }
+        document.getElementById('campoBusca').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') buscar();
         });
     </script>
 </body>
