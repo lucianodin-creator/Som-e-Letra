@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - PREMIUM</title>
+    <title>SOM E LETRA - OFICIAL</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { background: #121212; color: white; font-family: sans-serif; margin: 0; }
         .nav-bar { padding: 15px; background: #1db954; text-align: center; font-weight: bold; font-size: 20px; }
-        .search-area { padding: 20px; display: flex; gap: 10px; background: #181818; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #282828; color: white; outline: none; }
-        button { background: #1db954; border: none; border-radius: 25px; padding: 0 25px; color: white; font-weight: bold; cursor: pointer; }
+        .search-area { padding: 15px; display: flex; gap: 8px; background: #181818; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #282828; color: white; outline: none; }
+        button { background: #1db954; border: none; border-radius: 8px; padding: 0 20px; color: white; font-weight: bold; cursor: pointer; }
         
-        /* Container do Player Oficial */
         #video-placeholder { width: 100%; aspect-ratio: 16/9; display: none; background: #000; }
-
-        .lista-musicas { padding: 15px; display: grid; gap: 10px; }
-        .musica-card { background: #181818; padding: 12px; border-radius: 10px; display: flex; align-items: center; gap: 15px; cursor: pointer; border: 1px solid transparent; }
+        .lista-musicas { padding: 15px; }
+        .musica-card { background: #181818; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 15px; cursor: pointer; margin-bottom: 10px; border: 1px solid transparent; }
         .musica-card:active { background: #282828; border-color: #1db954; }
-        .musica-card img { width: 100px; height: 60px; border-radius: 5px; object-fit: cover; }
+        .musica-card img { width: 100px; height: 60px; border-radius: 4px; object-fit: cover; }
         .musica-titulo { font-weight: bold; font-size: 14px; color: #fff; }
     </style>
 </head>
@@ -27,37 +25,32 @@
     <div class="nav-bar">🎧 SOM E LETRA</div>
 
     <div class="search-area">
-        <input type="text" id="campoBusca" placeholder="Digite Djavan, Roberto Carlos..." autocomplete="off">
-        <button onclick="buscarMusicas()">BUSCAR</button>
+        <input type="text" id="campoBusca" placeholder="Ex: Djavan, Kid Abelha..." autocomplete="off">
+        <button onclick="buscar()">BUSCAR</button>
     </div>
 
     <div id="video-placeholder"></div>
-
     <div id="listaResultados" class="lista-musicas"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
         let player;
-        
-        // Inicializa o player escondido
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('video-placeholder', {
-                height: '100%',
-                width: '100%',
-                playerVars: { 'autoplay': 1, 'modestbranding': 1, 'controls': 1, 'origin': window.location.origin }
+                height: '100%', width: '100%',
+                playerVars: { 'autoplay': 1, 'modestbranding': 1, 'origin': window.location.origin }
             });
         }
 
-        async function buscarMusicas() {
+        async function buscar() {
             const termo = document.getElementById('campoBusca').value;
             if(!termo) return;
-            
             const lista = document.getElementById('listaResultados');
-            lista.innerHTML = "<p style='text-align:center'>Sintonizando lista de sucessos...</p>";
+            lista.innerHTML = "<p style='text-align:center'>Buscando sucessos...</p>";
 
             try {
-                // Busca limpa de vídeos
+                // Busca via Invidious para pegar apenas os dados (ID, título e capa)
                 const res = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
                 
