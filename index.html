@@ -6,22 +6,23 @@
     <title>SOM E LETRA - PREMIUM</title>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
-        .nav-bar { background: #1db954; color: #000; padding: 15px; text-align: center; font-weight: bold; }
-        .search-box { padding: 15px; background: #121212; display: flex; gap: 8px; position: sticky; top: 0; z-index: 100; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #282828; color: #fff; }
+        .nav-bar { background: #1db954; color: #000; padding: 15px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
+        .search-box { padding: 15px; background: #121212; display: flex; gap: 8px; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #282828; color: #fff; outline: none; }
         button { background: #1db954; border: none; border-radius: 25px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
         
-        #player-section { display: none; background: #000; padding-bottom: 20px; }
+        #player-section { display: none; background: #121212; border-bottom: 2px solid #1db954; }
         .video-container { width: 100%; aspect-ratio: 16/9; }
         iframe { width: 100%; height: 100%; border: none; }
         
-        .letra-container { padding: 20px; background: #121212; border-radius: 15px; margin: 10px; line-height: 1.6; white-space: pre-wrap; color: #ccc; font-size: 1.1rem; }
-        .letra-titulo { color: #1db954; font-size: 1.4rem; margin-bottom: 10px; font-weight: bold; }
-
+        .letra-box { padding: 25px; line-height: 1.8; color: #fff; font-size: 1.2rem; text-align: center; }
+        .letra-titulo { color: #1db954; font-size: 1.5rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+        
         .lista { padding: 10px; }
-        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
+        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .card:active { background: #282828; }
         .card img { width: 90px; height: 60px; border-radius: 4px; object-fit: cover; }
-        .titulo { font-size: 14px; font-weight: bold; }
+        .titulo { font-size: 14px; font-weight: bold; flex: 1; }
     </style>
 </head>
 <body>
@@ -29,9 +30,9 @@
     
     <div id="player-section">
         <div class="video-container" id="player-wrapper"></div>
-        <div id="letra-exibicao" class="letra-container">
-            <div class="letra-titulo" id="musica-atual"></div>
-            <div id="texto-letra">Clique em uma música para ver a letra...</div>
+        <div class="letra-box">
+            <div id="musica-atual" class="letra-titulo"></div>
+            <div id="texto-letra">Buscando letra...</div>
         </div>
     </div>
 
@@ -47,7 +48,7 @@
             const termo = document.getElementById('busca').value;
             if(!termo) return;
             const lista = document.getElementById('listaResultados');
-            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando...</p>";
+            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando músicas...</p>";
             try {
                 const res = await fetch(`https://iv.melmac.space/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
@@ -56,52 +57,37 @@
                     if(item.type === 'video') {
                         const div = document.createElement('div');
                         div.className = 'card';
-                        div.onclick = () => carregarMusica(item.videoId, item.title);
+                        div.onclick = () => tocar(item.videoId, item.title, item.author);
                         const thumb = item.videoThumbnails ? item.videoThumbnails[0].url : "";
-                        div.innerHTML = `<img src="${thumb}" alt="capa"><span class="titulo">${item.title}</span>`;
+                        div.innerHTML = `<img src="${thumb}"><span class="titulo">${item.title}</span>`;
                         lista.appendChild(div);
                     }
                 });
             } catch (e) {
-                lista.innerHTML = "<p style='text-align:center'>Servidor instável. Tente novamente.</p>";
+                lista.innerHTML = "<p style='text-align:center'>Erro ao conectar. Tente de novo.</p>";
             }
         }
 
-        async function carregarMusica(id, tituloFull) {
-            // Mostra a seção do player
+        async function tocar(id, titulo, autor) {
             document.getElementById('player-section').style.display = "block";
-            
-            // Carrega o vídeo
-            const wrapper = document.getElementById('player-wrapper');
-            wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-            
-            // Tenta limpar o título para buscar a letra (remove "Oficial", "Clipe", etc)
-            const tituloLimpo = tituloFull.split('(')[0].split('[')[0].replace('Oficial', '').replace('Video', '').trim();
-            document.getElementById('musica-atual').innerText = tituloLimpo;
-            document.getElementById('texto-letra').innerText = "Buscando letra...";
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+            
+            // LIMPEZA DO TÍTULO: Tira (Official Video), [Clipe], etc.
+            let musicaLimpa = titulo.split('(')[0].split('[')[0].replace(/official|video|clipe|music|lyrics/gi, '').trim();
+            if(musicaLimpa.includes('-')) musicaLimpa = musicaLimpa.split('-')[1].trim();
 
-            // Busca a letra
+            document.getElementById('musica-atual').innerText = musicaLimpa;
+            document.getElementById('texto-letra').innerText = "Carregando letra...";
+
             try {
-                // A API Lyrics.ovh funciona melhor com "Artista/Musica"
-                // Vamos tentar separar o título se tiver um " - "
-                let artista = "";
-                let musica = tituloLimpo;
-                if(tituloLimpo.includes("-")) {
-                    [artista, musica] = tituloLimpo.split("-");
-                }
-                
-                const resLetra = await fetch(`https://api.lyrics.ovh/v1/${artista.trim()}/${musica.trim()}`);
-                const dataLetra = await resLetra.json();
-                
-                if(dataLetra.lyrics) {
-                    document.getElementById('texto-letra').innerText = dataLetra.lyrics;
-                } else {
-                    document.getElementById('texto-letra').innerText = "Letra não encontrada para esta versão.";
-                }
-            } catch (e) {
-                document.getElementById('texto-letra').innerText = "Não foi possível carregar a letra automaticamente.";
+                // Tenta buscar usando o autor do canal + nome da música limpo
+                const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(autor)}/${encodeURIComponent(musicaLimpa)}`);
+                const data = await res.json();
+                document.getElementById('texto-letra').innerText = data.lyrics || "Letra não encontrada. Tente buscar como 'Artista - Música'.";
+            } catch {
+                document.getElementById('texto-letra').innerText = "Erro ao buscar letra.";
             }
         }
     </script>
