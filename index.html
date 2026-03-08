@@ -15,8 +15,7 @@
         <p id="status" style="color: #1db954; font-size: 12px; margin-top: 10px;"></p>
     </div>
 
-    <main class="main-content" id="blocoConteudo">
-        </main>
+    <main class="main-content" id="blocoConteudo"></main>
 
     <footer>Som e Letra © 2026</footer>
 
@@ -38,7 +37,9 @@
                         const musica = data.results[0];
                         status.innerText = "";
                         mostrarInterface(musica);
-                        buscarLetraReal(musica.artistName, musica.trackName);
+                        // Limpando o nome do artista para a busca da letra ser mais precisa
+                        const artistaPrincipal = musica.artistName.split(',')[0].split('&')[0].trim();
+                        buscarLetraReal(artistaPrincipal, musica.trackName);
                     } else {
                         status.innerText = "Nada encontrado.";
                     }
@@ -47,7 +48,7 @@
         });
 
         function mostrarInterface(musica) {
-            const query = encodeURIComponent(musica.artistName + " " + musica.trackName);
+            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " official audio");
             conteudo.innerHTML = `
                 <div class="artist-card">
                     <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
@@ -58,29 +59,24 @@
                 </div>
 
                 <div class="video-container" style="display: block;">
-                    <iframe src="https://www.youtube.com/embed?listType=search&list=${query}" allowfullscreen></iframe>
+                    <iframe src="https://www.youtube.com/embed?listType=search&list=${buscaVideo}" allowfullscreen></iframe>
                 </div>
 
                 <div class="lyrics-container">
                     <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
-                    <div id="textoLetra">Buscando letra oficial...</div>
+                    <div id="textoLetra" style="white-space: pre-wrap;">Buscando letra...</div>
                 </div>
             `;
         }
 
         function buscarLetraReal(artista, musica) {
             const areaTexto = document.getElementById('textoLetra');
-            // Usando a API Lyrics.ovh (Gratuita e sem necessidade de Token)
             fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
             .then(res => res.json())
             .then(data => {
-                if(data.lyrics) {
-                    areaTexto.innerText = data.lyrics;
-                } else {
-                    areaTexto.innerText = "Letra não encontrada para esta música.";
-                }
+                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta versão.";
             })
-            .catch(() => areaTexto.innerText = "Erro ao carregar letra.");
+            .catch(() => areaTexto.innerText = "Erro na conexão com o servidor de letras.");
         }
     </script>
 </body>
