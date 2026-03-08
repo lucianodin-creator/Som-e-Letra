@@ -44,11 +44,11 @@
                         const wrapper = document.getElementById('player-wrapper');
                         wrapper.style.display = "block";
                         // Usando o player desbloqueado para o seu link lucianodin-creator
-                        wrapper.innerHTML = `<iframe src="https://invidious.lunar.icu/embed/${item.videoId}?autoplay=1" allowfullscreen></iframe>`;
+                        wrapper.innerHTML = `<iframe src="<iframe width="100%" height="315" src="https://www.youtube.com/embed/z7VbvUxj-hw"frameborder="0" allowfullscreen></iframe>";
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
                     div.innerHTML = `
-                        <img src="https://invidious.lunar.icu/vi/${item.videoId}/mqdefault.jpg">
+<img src="" alt="Capa da Música" id="capa">
                         <span class="titulo">${item.title}</span>
                     `;
                     lista.appendChild(div);
