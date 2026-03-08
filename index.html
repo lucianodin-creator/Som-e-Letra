@@ -33,30 +33,41 @@
             const termo = document.getElementById('busca').value;
             if(!termo) return;
             const lista = document.getElementById('listaResultados');
-            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando...</p>";
+            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando no YouTube...</p>";
+            
+            // Tentei usar um servidor alternativo mais estável (invidious.projectsegfau.lt)
             try {
-                const res = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}`);
+                const res = await fetch(`https://invidious.projectsegfau.lt/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
+                
+                if (data.length === 0) {
+                    lista.innerHTML = "<p style='text-align:center'>Nenhuma música encontrada.</p>";
+                    return;
+                }
+
                 lista.innerHTML = "";
                 data.forEach(item => {
-                    if(item.type === 'video') {
-                        const div = document.createElement('div');
-                        div.className = 'card';
-                        div.onclick = () => {
-                            const wrapper = document.getElementById('player-wrapper');
-                            wrapper.style.display = "block";
-                            wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.videoId}?autoplay=1" allow="autoplay" allowfullscreen></iframe>`;
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        };
-                        div.innerHTML = `
-                            <img src="${item.videoThumbnails[0].url}" alt="capa">
-                            <span class="titulo">${item.title}</span>
-                        `;
-                        lista.appendChild(div);
-                    }
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.onclick = () => {
+                        const wrapper = document.getElementById('player-wrapper');
+                        wrapper.style.display = "block";
+                        wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.videoId}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    };
+                    
+                    // Verificação de segurança para a imagem da capa
+                    const thumb = item.videoThumbnails ? item.videoThumbnails[0].url : "";
+                    
+                    div.innerHTML = `
+                        <img src="${thumb}" alt="capa">
+                        <span class="titulo">${item.title}</span>
+                    `;
+                    lista.appendChild(div);
                 });
             } catch (e) {
-                lista.innerHTML = "<p style='text-align:center'>Erro ao buscar músicas.</p>";
+                console.log(e);
+                lista.innerHTML = "<p style='text-align:center'>Servidor instável. Tente novamente em instantes.</p>";
             }
         }
     </script>
