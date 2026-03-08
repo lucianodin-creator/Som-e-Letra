@@ -35,9 +35,9 @@
             const lista = document.getElementById('listaResultados');
             lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando no YouTube...</p>";
             
-            // Tentei usar um servidor alternativo mais estável (invidious.projectsegfau.lt)
+            // Tentei usar um servidor alternativo mais estável (iv.melmac.space)
             try {
-                const res = await fetch(`https://invidious.projectsegfau.lt/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
+                const res = await fetch(`https://iv.melmac.space/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
                 
                 if (data.length === 0) {
