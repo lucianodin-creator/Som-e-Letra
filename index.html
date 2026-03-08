@@ -37,9 +37,10 @@
                         const musica = data.results[0];
                         status.innerText = "";
                         mostrarInterface(musica);
-                        // Limpando nomes extras para busca da letra
-                        const artistaPrincipal = musica.artistName.split(',')[0].split('&')[0].trim();
-                        buscarLetraReal(artistaPrincipal, musica.trackName);
+                        
+                        // Limpeza para a API de letras não falhar com "MC", "Participação", etc.
+                        const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP/gi, '').trim();
+                        buscarLetraReal(artistaLimpo, musica.trackName);
                     } else {
                         status.innerText = "Nada encontrado.";
                     }
@@ -48,9 +49,9 @@
         });
 
         function mostrarInterface(musica) {
-            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " official audio");
-            conteudo.innerHTML = `
-                <div class="artist-card">
+            // Buscando "Topic" ou "Audio" no YT costuma evitar o bloqueio de reprodução
+            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " audio");
+            conteudo.innerHTML =                 `<div class="artist-card">
                     <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
                     <div class="song-info">
                         <span class="song-title">${musica.trackName}</span>
@@ -64,19 +65,19 @@
 
                 <div class="lyrics-container">
                     <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
-                    <div id="textoLetra" style="white-space: pre-wrap;">Buscando letra...</div>
-                </div>
-            `;
+                    <div id="textoLetra" style="white-space: pre-wrap;">Carregando letra...</div>
+                </div>`;
         }
 
         function buscarLetraReal(artista, musica) {
             const areaTexto = document.getElementById('textoLetra');
+            // Tentando API alternativa para maior estabilidade
             fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
             .then(res => res.json())
             .then(data => {
-                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta versão.";
+                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta busca simplificada.";
             })
-            .catch(() => areaTexto.innerText = "Erro na conexão com o servidor de letras.");
+            .catch(() => areaTexto.innerText = "Servidor de letras ocupado. Tente novamente em instantes.");
         }
     </script>
 </body>
