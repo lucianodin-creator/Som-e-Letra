@@ -2,28 +2,28 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SOM E LETRA</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; margin: 0; }
-        .nav-bar { padding: 15px; background: #1db954; text-align: center; font-weight: bold; font-size: 20px; }
-        .search-area { padding: 20px; display: flex; gap: 10px; background: #181818; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #282828; color: white; outline: none; }
-        button { background: #1db954; border: none; border-radius: 25px; padding: 0 25px; color: white; font-weight: bold; cursor: pointer; }
+        body { background: #121212; color: white; font-family: sans-serif; margin: 0; overflow-x: hidden; }
+        .nav-bar { padding: 15px; background: #1db954; text-align: center; font-weight: bold; font-size: 18px; position: sticky; top: 0; z-index: 100; }
+        .search-area { padding: 15px; background: #121212; display: flex; gap: 8px; border-bottom: 1px solid #282828; }
+        input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
+        button { background: #1db954; border: none; border-radius: 8px; padding: 0 20px; color: white; font-weight: bold; cursor: pointer; }
         
-        /* Lista de Músicas Estilizada */
-        #listaMusicas { padding: 15px; display: grid; gap: 15px; }
-        .musica-item { background: #282828; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; }
-        .musica-item:hover { background: #3e3e3e; }
-        .musica-item img { width: 80px; height: 60px; border-radius: 5px; object-fit: cover; }
-        .info { display: flex; flex-direction: column; }
-        .titulo { font-weight: bold; font-size: 14px; color: #fff; }
-        .canal { font-size: 12px; color: #b3b3b3; }
+        #playerContainer { width: 100%; display: none; background: #000; line-height: 0; }
+        #playerContainer iframe { width: 100%; aspect-ratio: 16 / 9; border: none; }
 
-        /* Player Flutuante */
-        #playerContainer { display: none; padding: 15px; background: #000; border-radius: 10px; margin: 15px; }
-        iframe { width: 100%; height: 200px; border: none; border-radius: 8px; }
+        .lista-resultados { padding: 10px; }
+        .musica-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+        .musica-card:active { background: #282828; border-color: #1db954; }
+        .musica-card img { width: 100px; height: 60px; border-radius: 4px; object-fit: cover; }
+        .musica-info { display: flex; flex-direction: column; gap: 4px; }
+        .musica-titulo { font-weight: bold; font-size: 14px; line-height: 1.2; }
+        .musica-artista { font-size: 12px; color: #b3b3b3; }
+        
+        .lyrics-box { padding: 15px; background: #181818; margin: 10px; border-radius: 8px; display: none; white-space: pre-wrap; font-size: 15px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -31,52 +31,72 @@
     <div class="nav-bar">🎧 SOM E LETRA</div>
 
     <div class="search-area">
-        <input type="text" id="campoBusca" placeholder="Ex: Djavan, Roberto Carlos..." autocomplete="off">
+        <input type="text" id="campoBusca" placeholder="Ex: Djavan, Kid Abelha..." autocomplete="off">
         <button onclick="pesquisar()">BUSCAR</button>
     </div>
 
     <div id="playerContainer"></div>
-
-    <div id="listaMusicas"></div>
+    <div id="lyricsContainer" class="lyrics-box"></div>
+    <div id="listaResultados" class="lista-resultados"></div>
 
     <script>
         async function pesquisar() {
             const termo = document.getElementById('campoBusca').value;
             if(!termo) return;
             
-            const lista = document.getElementById('listaMusicas');
+            const lista = document.getElementById('listaResultados');
             const player = document.getElementById('playerContainer');
-            lista.innerHTML = "<p style='text-align:center'>Procurando músicas...</p>";
+            const lyrics = document.getElementById('lyricsContainer');
+            
+            lista.innerHTML = "<p style='text-align:center; padding:20px;'>Buscando sucessos...</p>";
             player.style.display = "none";
+            lyrics.style.display = "none";
 
-            // Usando a API do YouTube via Invidious (Gratuita e sem anúncios/bloqueios)
             try {
-                const response = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
-                const data = await response.json();
+                // Busca via DuckDuckGo/YouTube (Mais limpa que o Bing para dados crus)
+                const res = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
+                const data = await res.json();
                 
                 lista.innerHTML = "";
-                data.forEach(item => {
+                data.slice(0, 15).forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'musica-item';
-                    div.onclick = () => carregarVideo(item.videoId);
+                    div.className = 'musica-card';
+                    div.onclick = () => tocar(item.videoId, item.title, item.author);
                     div.innerHTML = `
                         <img src="https://invidious.lunar.icu/vi/${item.videoId}/mqdefault.jpg">
-                        <div class="info">
-                            <span class="titulo">${item.title}</span>
-                            <span class="canal">${item.author}</span>
+                        <div class="musica-info">
+                            <span class="musica-titulo">${item.title}</span>
+                            <span class="musica-artista">${item.author}</span>
                         </div>
                     `;
                     lista.appendChild(div);
                 });
-            } catch (error) {
-                lista.innerHTML = "<p style='text-align:center'>Erro ao carregar. Tente novamente.</p>";
+            } catch (e) {
+                lista.innerHTML = "<p style='text-align:center; padding:20px;'>Erro na busca. Tente outro nome!</p>";
             }
         }
 
-        function carregarVideo(id) {
+        async function tocar(id, titulo, artista) {
             const player = document.getElementById('playerContainer');
-            player.style.display = "block";
+            const lyrics = document.getElementById('lyricsContainer');
+            
             player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`;
+            player.style.display = "block";
+            
+            // Tenta buscar a letra de forma independente
+            lyrics.style.display = "block";
+            lyrics.innerText = "Carregando letra...";
+            
+            try {
+                const cleanArt = artista.split('-')[0].replace(/VEVO|Official|Oficial|MC|Mc/gi, '').trim();
+                const cleanSong = titulo.split('(')[0].split('-')[0].trim();
+                const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArt)}/${encodeURIComponent(cleanSong)}`);
+                const data = await res.json();
+                lyrics.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta versão.";
+            } catch (e) {
+                lyrics.innerText = "Letra indisponível no momento.";
+            }
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
