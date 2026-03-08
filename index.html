@@ -10,37 +10,30 @@
         .search-box { padding: 15px; background: #121212; display: flex; gap: 8px; }
         input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #282828; color: #fff; outline: none; }
         button { background: #1db954; border: none; border-radius: 25px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-        
         #player-section { display: none; background: #121212; border-bottom: 2px solid #1db954; }
         .video-container { width: 100%; aspect-ratio: 16/9; }
         iframe { width: 100%; height: 100%; border: none; }
-        
-        .letra-box { padding: 25px; line-height: 1.8; color: #fff; font-size: 1.2rem; text-align: center; }
+        .letra-box { padding: 25px; line-height: 1.8; color: #fff; font-size: 1.2rem; text-align: center; white-space: pre-wrap; }
         .letra-titulo { color: #1db954; font-size: 1.5rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
-        
         .lista { padding: 10px; }
-        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .card:active { background: #282828; }
+        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
         .card img { width: 90px; height: 60px; border-radius: 4px; object-fit: cover; }
-        .titulo { font-size: 14px; font-weight: bold; flex: 1; }
+        .titulo { font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="nav-bar">🎧 SOM E LETRA</div>
-    
     <div id="player-section">
         <div class="video-container" id="player-wrapper"></div>
         <div class="letra-box">
             <div id="musica-atual" class="letra-titulo"></div>
-            <div id="texto-letra">Buscando letra...</div>
+            <div id="texto-letra">Aguardando...</div>
         </div>
     </div>
-
     <div class="search-box">
-        <input type="text" id="busca" placeholder="Artista ou música..." autocomplete="off">
+        <input type="text" id="busca" placeholder="Ex: Djavan - Sina" autocomplete="off">
         <button onclick="buscar()">BUSCAR</button>
     </div>
-    
     <div id="listaResultados" class="lista"></div>
 
     <script>
@@ -64,30 +57,40 @@
                     }
                 });
             } catch (e) {
-                lista.innerHTML = "<p style='text-align:center'>Erro ao conectar. Tente de novo.</p>";
+                lista.innerHTML = "<p style='text-align:center'>Erro na busca.</p>";
             }
         }
 
-        async function tocar(id, titulo, autor) {
+        async function tocar(id, tituloFull, autor) {
             document.getElementById('player-section').style.display = "block";
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
             document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
             
-            // LIMPEZA DO TÍTULO: Tira (Official Video), [Clipe], etc.
-            let musicaLimpa = titulo.split('(')[0].split('[')[0].replace(/official|video|clipe|music|lyrics/gi, '').trim();
-            if(musicaLimpa.includes('-')) musicaLimpa = musicaLimpa.split('-')[1].trim();
+            // Limpeza radical do título
+            let titulo = tituloFull.replace(/\(Official.*?\)|\[.*?\]|Official Music Video|Clipe Oficial|Video Oficial|Lyrics|Ao Vivo|Live/gi, "").trim();
+            
+            let artista = autor.replace("VEVO", "").replace("- Topic", "").trim();
+            let musica = titulo;
 
-            document.getElementById('musica-atual').innerText = musicaLimpa;
-            document.getElementById('texto-letra').innerText = "Carregando letra...";
+            if (titulo.includes("-")) {
+                const partes = titulo.split("-");
+                artista = partes[0].trim();
+                musica = partes[1].trim();
+            }
+
+            document.getElementById('musica-atual').innerText = `${artista} - ${musica}`;
+            document.getElementById('texto-letra').innerText = "Buscando letra...";
 
             try {
-                // Tenta buscar usando o autor do canal + nome da música limpo
-                const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(autor)}/${encodeURIComponent(musicaLimpa)}`);
+                const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`);
                 const data = await res.json();
-                document.getElementById('texto-letra').innerText = data.lyrics || "Letra não encontrada. Tente buscar como 'Artista - Música'.";
+                if (data.lyrics) {
+                    document.getElementById('texto-letra').innerText = data.lyrics;
+                } else {
+                    document.getElementById('texto-letra').innerText = "Letra não encontrada para esta versão.";
+                }
             } catch {
-                document.getElementById('texto-letra').innerText = "Erro ao buscar letra.";
+                document.getElementById('texto-letra').innerText = "Servidor de letras fora do ar.";
             }
         }
     </script>
