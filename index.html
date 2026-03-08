@@ -38,6 +38,7 @@
                         const musica = data.results[0];
                         status.innerText = "";
                         mostrarInterface(musica);
+                        buscarLetraReal(musica.artistName, musica.trackName);
                     } else {
                         status.innerText = "Nada encontrado.";
                     }
@@ -61,10 +62,25 @@
                 </div>
 
                 <div class="lyrics-container">
-                    <button class="btn-translation">Ver Tradução</button>
-                    <div id="textoLetra">Carregando letra de ${musica.trackName}...</div>
+                    <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
+                    <div id="textoLetra">Buscando letra oficial...</div>
                 </div>
             `;
+        }
+
+        function buscarLetraReal(artista, musica) {
+            const areaTexto = document.getElementById('textoLetra');
+            // Usando a API Lyrics.ovh (Gratuita e sem necessidade de Token)
+            fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.lyrics) {
+                    areaTexto.innerText = data.lyrics;
+                } else {
+                    areaTexto.innerText = "Letra não encontrada para esta música.";
+                }
+            })
+            .catch(() => areaTexto.innerText = "Erro ao carregar letra.");
         }
     </script>
 </body>
