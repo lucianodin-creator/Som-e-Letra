@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOM E LETRA - MODULAR</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header>🎧 SOM E LETRA</header>
+
+    <div class="search-container">
+        <input type="text" id="campoBusca" placeholder="Busque artista ou música...">
+        <p id="status" style="color: #1db954; font-size: 12px; margin-top: 10px;"></p>
+    </div>
+
+    <main class="main-content" id="blocoConteudo">
+        </main>
+
+    <footer>Som e Letra © 2026</footer>
+
+    <script>
+        const campo = document.getElementById('campoBusca');
+        const conteudo = document.getElementById('blocoConteudo');
+        const status = document.getElementById('status');
+
+        campo.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const termo = this.value;
+                if(!termo) return;
+                status.innerText = "Buscando...";
+                
+                fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(termo)}&entity=song&limit=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.results.length > 0) {
+                        const musica = data.results[0];
+                        status.innerText = "";
+                        mostrarCard(musica);
+                    } else {
+                        status.innerText = "Nada encontrado.";
+                    }
+                });
+            }
+        });
+
+        function mostrarCard(musica) {
+            conteudo.innerHTML = `
+                <div class="artist-card" onclick="buscarLetra('${musica.artistName}', '${musica.trackName}')">
+                    <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
+                    <div class="song-info">
+                        <span class="song-title">${musica.trackName}</span>
+                        <span class="artist-name">${musica.artistName}</span>
+                        <p style="font-size: 10px; color: #1db954; margin-top: 5px;">Clique para ver a letra</p>
+                    </div>
+                </div>
+                <div id="videoPlayer" class="video-container"></div>
+                <div id="videoPlayer" class="video-container"></div>
+                <div id="areaLetra"></div>
+            `;
+        }
+
+        function buscarLetra(artista, musica) {
+    const videoArea = document.getElementById("videoPlayer");
+    videoArea.style.display = "block";
+    videoArea.innerHTML = `<iframe src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(artista + " " + musica)}" allowfullscreen></iframe>`;
+    const videoArea = document.getElementById("videoPlayer");
+    videoArea.style.display = "block";
+    videoArea.innerHTML = `<iframe src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(artista + " " + musica)}" allowfullscreen></iframe>`;
+            const area = document.getElementById('areaLetra');
+            area.innerHTML = "<p style='color: #888;'>Carregando letra...</p>";
+            
+            // Usando API de letras (Exemplo com Vagalume ou similar no futuro)
+            // Por enquanto, simulando a estrutura que você gostou
+            area.innerHTML = `
+                <div class="lyrics-container">
+                    <button class="btn-translation">Ver Tradução</button>
+                    <div id="textoLetra">
+                        [Letra de ${musica} - ${artista}]
+                        
+                        Aqui aparecerá a letra completa...
+                        Sem anúncios, sem poluição.
+                        Apenas o Som e Letra.
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

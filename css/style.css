@@ -1,0 +1,113 @@
+body { font-family: sans-serif; background: #000; color: #fff; margin: 0; }
+header { background: #1db954; padding: 20px; text-align: center; font-weight: bold; }
+.search-box { padding: 20px; text-align: center; background: #111; }
+input { width: 80%; padding: 15px; border-radius: 25px; border: none; }
+
+/* ESTILO DO CARD DO ARTISTA */
+.artist-card {
+    background: #181818;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    width: 90%;
+    max-width: 450px;
+    margin: 10px 0;
+    transition: background 0.3s;
+    border: 1px solid #282828;
+}
+
+.artist-card:hover {
+    background: #282828;
+}
+
+.artist-photo {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%; /* Deixa a foto circular */
+    object-fit: cover;
+    margin-right: 15px;
+    border: 2px solid #1db954;
+}
+
+.song-info {
+    flex-grow: 1;
+}
+
+.song-title {
+    font-weight: bold;
+    font-size: 16px;
+    display: block;
+    color: #fff;
+}
+
+.artist-name {
+    font-size: 14px;
+    color: #b3b3b3;
+}
+
+/* ESTILO DO BLOCO DE LETRA */
+.lyrics-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #121212;
+    border-radius: 15px;
+    line-height: 1.8;
+    font-size: 18px;
+    color: #e0e0e0;
+    white-space: pre-line; /* Mantém as quebras de linha da letra */
+}
+
+.btn-translation {
+    background: #1db954;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.btn-translation:active {
+    transform: scale(0.95);
+}
+
+/* ESTILO DO PLAYER THE FRAME */
+.video-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: none; /* Inicia escondido */
+}
+
+iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
+
+/* ESTILO DO PLAYER THE FRAME */
+.video-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: none; /* Inicia escondido */
+}
+
+iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
