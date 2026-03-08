@@ -38,7 +38,7 @@
                         status.innerText = "";
                         mostrarInterface(musica);
                         
-                        // FILTRO: Remove "MC", "Participações" e pega só o nome principal
+                        // FILTRO: Limpa nomes como MC, SP, participações para não dar erro na letra
                         const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP|feat|ft/gi, '').trim();
                         buscarLetraReal(artistaLimpo, musica.trackName);
                     } else {
@@ -49,8 +49,8 @@
         });
 
         function mostrarInterface(musica) {
-            // BUSCA: Adicionar "audio" ajuda a carregar versões "Topic" que não são bloqueadas
-            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " audio");
+            // BUSCA: Usar "audio" ou "topic" evita que o vídeo fique indisponível por direitos
+            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " official audio");
             conteudo.innerHTML = `
                 <div class="artist-card">
                     <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="lyrics-container">
-                    <button class="btn-translation" onclick="alert('Tradução em processamento...')">Ver Tradução</button>
+                    <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
                     <div id="textoLetra" style="white-space: pre-wrap; font-size: 16px;">Buscando letra oficial...</div>
                 </div>
             `;
@@ -76,10 +76,10 @@
             fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
             .then(res => res.json())
             .then(data => {
-                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não disponível para esta busca simplificada.";
+                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta busca simplificada.";
             })
             .catch(() => {
-                areaTexto.innerText = "O servidor de letras está instável. Tente outra música!";
+                areaTexto.innerText = "Servidor de letras ocupado. Tente novamente em instantes.";
             });
         }
     </script>
