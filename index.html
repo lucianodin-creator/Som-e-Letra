@@ -2,117 +2,61 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOM E LETRA - PREMIUM</title>
     <style>
-        /* Estética Moraes Shop: Verde e Preto */
-        body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 50px; }
-        .nav-bar { background: #1db954; color: #000; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; z-index: 999; }
-        
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 30px; }
+        .nav-bar { background: #1db954; color: #000; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2rem; }
         .search-box { padding: 15px; background: #121212; display: flex; gap: 8px; border-bottom: 1px solid #1db954; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #1a1a1a; color: #fff; outline: none; }
-        button { background: #1db954; border: none; border-radius: 25px; padding: 0 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); opacity: 0.8; }
-
-        /* Container do Player Oficial do Google */
-        #player-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; display: none; border-bottom: 2px solid #1db954; }
-        #player { width: 100%; height: 100%; }
-
-        /* Lista de Músicas (Interface Limpa) */
-        .lista-container { padding: 10px; }
-        .musica-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #121212; margin-bottom: 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
-        .musica-item:active { border-color: #1db954; background: #1a1a1a; }
-        .musica-item img { width: 80px; height: 50px; border-radius: 4px; object-fit: cover; }
-        .info { display: flex; flex-direction: column; overflow: hidden; }
-        .titulo { font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .autor { font-size: 12px; color: #b3b3b3; }
-        
-        #status-msg { text-align: center; color: #1db954; padding: 20px; font-size: 14px; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #222; color: #fff; outline: none; }
+        button { background: #1db954; border: none; border-radius: 25px; padding: 0 20px; font-weight: bold; cursor: pointer; }
+        #player-wrapper { width: 100%; aspect-ratio: 16/9; display: none; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .lista { padding: 10px; }
+        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #121212; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
+        .card img { width: 90px; height: 60px; border-radius: 4px; object-fit: cover; }
+        .titulo { font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="nav-bar">🎧 SOM E LETRA</div>
-
-    <div id="player-wrapper">
-        <div id="player"></div>
-    </div>
-
+    <div id="player-wrapper"></div>
     <div class="search-box">
-        <input type="text" id="busca" placeholder="Ex: Djavan, Caetano Veloso..." autocomplete="off">
-        <button onclick="fazerBusca()">OK</button>
+        <input type="text" id="busca" placeholder="Digite Djavan, Roberto Carlos..." autocomplete="off">
+        <button onclick="buscar()">BUSCAR</button>
     </div>
-
-    <div id="status-msg">Pesquise por um artista para ver a lista</div>
-    <div id="listaResultados" class="lista-container"></div>
-
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <div id="listaResultados" class="lista"></div>
 
     <script>
-        let player;
-        
-        // 1. Função obrigatória da documentação: prepara o player
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                playerVars: { 
-                    'playsinline': 1, 
-                    'modestbranding': 1, 
-                    'rel': 0,
-                    'origin': window.location.origin 
-                },
-                events: { 'onStateChange': onPlayerStateChange }
-            });
-        }
-
-        async function fazerBusca() {
+        async function buscar() {
             const termo = document.getElementById('busca').value;
             if(!termo) return;
-            
             const lista = document.getElementById('listaResultados');
-            const msg = document.getElementById('status-msg');
-            
-            msg.innerText = "Sintonizando sucessos...";
-            lista.innerHTML = "";
-
+            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando sucessos...</p>";
             try {
-                // Busca apenas os dados (ID e Título) para montar a lista limpa
                 const res = await fetch(`https://invidious.lunar.icu/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
                 const data = await res.json();
-                
-                msg.innerText = "Toque em uma música da lista:";
+                lista.innerHTML = "";
                 data.slice(0, 15).forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'musica-item';
+                    div.className = 'card';
                     div.onclick = () => {
-                        document.getElementById('player-wrapper').style.display = "block";
-                        player.loadVideoById(item.videoId); // Função oficial do manual
+                        const wrapper = document.getElementById('player-wrapper');
+                        wrapper.style.display = "block";
+                        // Usando o player desbloqueado para o seu link lucianodin-creator
+                        wrapper.innerHTML = `<iframe src="https://invidious.lunar.icu/embed/${item.videoId}?autoplay=1" allowfullscreen></iframe>`;
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
                     div.innerHTML = `
                         <img src="https://invidious.lunar.icu/vi/${item.videoId}/mqdefault.jpg">
-                        <div class="info">
-                            <span class="titulo">${item.title}</span>
-                            <span class="autor">${item.author}</span>
-                        </div>
+                        <span class="titulo">${item.title}</span>
                     `;
                     lista.appendChild(div);
                 });
             } catch (e) {
-                msg.innerText = "Erro ao carregar lista. Tente novamente.";
+                lista.innerHTML = "<p style='text-align:center'>Erro de conexão. Tente novamente.</p>";
             }
         }
-
-        function onPlayerStateChange(event) {
-            // Se a música acabar (status 0), podemos fazer algo aqui no futuro
-            if (event.data == YT.PlayerState.ENDED) {
-                console.log("Música finalizada.");
-            }
-        }
-
-        // Permite buscar apertando Enter no teclado do celular
-        document.getElementById('busca').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') fazerBusca();
-        });
     </script>
 </body>
 </html>
