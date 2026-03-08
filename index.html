@@ -37,7 +37,7 @@
                     if(data.results.length > 0) {
                         const musica = data.results[0];
                         status.innerText = "";
-                        mostrarCard(musica);
+                        mostrarInterface(musica);
                     } else {
                         status.innerText = "Nada encontrado.";
                     }
@@ -45,44 +45,24 @@
             }
         });
 
-        function mostrarCard(musica) {
+        function mostrarInterface(musica) {
+            const query = encodeURIComponent(musica.artistName + " " + musica.trackName);
             conteudo.innerHTML = `
-                <div class="artist-card" onclick="buscarLetra('${musica.artistName}', '${musica.trackName}')">
+                <div class="artist-card">
                     <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
                     <div class="song-info">
                         <span class="song-title">${musica.trackName}</span>
                         <span class="artist-name">${musica.artistName}</span>
-                        <p style="font-size: 10px; color: #1db954; margin-top: 5px;">Clique para ver a letra</p>
                     </div>
                 </div>
-                <div id="videoPlayer" class="video-container"></div>
-                <div id="videoPlayer" class="video-container"></div>
-                <div id="areaLetra"></div>
-            `;
-        }
 
-        function buscarLetra(artista, musica) {
-    const videoArea = document.getElementById("videoPlayer");
-    videoArea.style.display = "block";
-    videoArea.innerHTML = `<iframe src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(artista + " " + musica)}" allowfullscreen></iframe>`;
-    const videoArea = document.getElementById("videoPlayer");
-    videoArea.style.display = "block";
-    videoArea.innerHTML = `<iframe src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(artista + " " + musica)}" allowfullscreen></iframe>`;
-            const area = document.getElementById('areaLetra');
-            area.innerHTML = "<p style='color: #888;'>Carregando letra...</p>";
-            
-            // Usando API de letras (Exemplo com Vagalume ou similar no futuro)
-            // Por enquanto, simulando a estrutura que você gostou
-            area.innerHTML = `
+                <div class="video-container" style="display: block;">
+                    <iframe src="https://www.youtube.com/embed?listType=search&list=${query}" allowfullscreen></iframe>
+                </div>
+
                 <div class="lyrics-container">
                     <button class="btn-translation">Ver Tradução</button>
-                    <div id="textoLetra">
-                        [Letra de ${musica} - ${artista}]
-                        
-                        Aqui aparecerá a letra completa...
-                        Sem anúncios, sem poluição.
-                        Apenas o Som e Letra.
-                    </div>
+                    <div id="textoLetra">Carregando letra de ${musica.trackName}...</div>
                 </div>
             `;
         }

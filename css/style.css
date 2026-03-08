@@ -111,3 +111,21 @@ iframe {
     aspect-ratio: 16 / 9;
     border: none;
 }
+
+/* ESTILO DO PLAYER THE FRAME */
+.video-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: none;
+}
+
+iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
