@@ -3,85 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - PREMIUM</title>
+    <title>SOM E LETRA - BUSCADOR</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .instrucao {
+            color: #b3b3b3;
+            font-size: 14px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
 
     <header>🎧 SOM E LETRA</header>
 
     <div class="search-container">
-        <input type="text" id="campoBusca" placeholder="Nome da música ou artista...">
-        <p id="status" style="color: #1db954; font-size: 12px; margin-top: 10px;"></p>
+        <input type="text" id="campoBusca" placeholder="Digite Música ou Artista...">
+        <p class="instrucao">Pressione Enter para buscar letra e vídeo no Bing</p>
     </div>
 
-    <main class="main-content" id="blocoConteudo"></main>
+    <main class="main-content">
+        <div style="text-align: center; padding: 40px; color: #1db954;">
+            <p>O melhor som, a letra certa.</p>
+        </div>
+    </main>
 
     <footer>Som e Letra © 2026</footer>
 
     <script>
         const campo = document.getElementById('campoBusca');
-        const conteudo = document.getElementById('blocoConteudo');
-        const status = document.getElementById('status');
 
         campo.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const termo = this.value;
                 if(!termo) return;
-                status.innerText = "Sintonizando...";
                 
-                fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(termo)}&entity=song&limit=1`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.results.length > 0) {
-                        const musica = data.results[0];
-                        status.innerText = "";
-                        mostrarInterface(musica);
-                        
-                        // FILTRO: Limpa nomes como MC, SP, participações para não dar erro na letra
-                        const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP|feat|ft/gi, '').trim();
-                        buscarLetraReal(artistaLimpo, musica.trackName);
-                    } else {
-                        status.innerText = "Música não encontrada.";
-                    }
-                });
+                // O segredo: Busca no Bing forçando letra e vídeo
+                const urlBing = "https://www.bing.com/search?q=" + encodeURIComponent(termo + " letra e vídeo");
+                
+                // Abre na mesma aba para parecer que o site mudou de fase
+                window.location.href = urlBing;
             }
         });
-
-        function mostrarInterface(musica) {
-            // BUSCA: Usar "audio" ou "topic" evita que o vídeo fique indisponível por direitos
-            const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " official audio");
-            conteudo.innerHTML = `
-                <div class="artist-card">
-                    <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
-                    <div class="song-info">
-                        <span class="song-title">${musica.trackName}</span>
-                        <span class="artist-name">${musica.artistName}</span>
-                    </div>
-                </div>
-
-                <div class="video-container" style="display: block;">
-                    <iframe src="https://www.youtube.com/embed?listType=search&list=${buscaVideo}" allowfullscreen></iframe>
-                </div>
-
-                <div class="lyrics-container">
-                    <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
-                    <div id="textoLetra" style="white-space: pre-wrap; font-size: 16px;">Buscando letra oficial...</div>
-                </div>
-            `;
-        }
-
-        function buscarLetraReal(artista, musica) {
-            const areaTexto = document.getElementById('textoLetra');
-            fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
-            .then(res => res.json())
-            .then(data => {
-                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta busca simplificada.";
-            })
-            .catch(() => {
-                areaTexto.innerText = "Servidor de letras ocupado. Tente novamente em instantes.";
-            });
-        }
     </script>
 </body>
 </html>
