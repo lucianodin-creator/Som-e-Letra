@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - MODULAR</title>
+    <title>SOM E LETRA - PREMIUM</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <header>🎧 SOM E LETRA</header>
 
     <div class="search-container">
-        <input type="text" id="campoBusca" placeholder="Busque artista ou música...">
+        <input type="text" id="campoBusca" placeholder="Nome da música ou artista...">
         <p id="status" style="color: #1db954; font-size: 12px; margin-top: 10px;"></p>
     </div>
 
@@ -28,7 +28,7 @@
             if (e.key === 'Enter') {
                 const termo = this.value;
                 if(!termo) return;
-                status.innerText = "Buscando...";
+                status.innerText = "Sintonizando...";
                 
                 fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(termo)}&entity=song&limit=1`)
                 .then(res => res.json())
@@ -38,20 +38,21 @@
                         status.innerText = "";
                         mostrarInterface(musica);
                         
-                        // Limpeza para a API de letras não falhar com "MC", "Participação", etc.
-                        const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP/gi, '').trim();
+                        // FILTRO: Pega só o primeiro nome e remove siglas (MC, SP, etc)
+                        const artistaLimpo = musica.artistName.split(',')[0].split('&')[0].replace(/MC|Mc|Sp|SP|feat|ft/gi, '').trim();
                         buscarLetraReal(artistaLimpo, musica.trackName);
                     } else {
-                        status.innerText = "Nada encontrado.";
+                        status.innerText = "Música não encontrada.";
                     }
                 });
             }
         });
 
         function mostrarInterface(musica) {
-            // Buscando "Topic" ou "Audio" no YT costuma evitar o bloqueio de reprodução
+            // BUSCA: Adicionar "audio" ajuda a carregar versões sem bloqueio de direitos
             const buscaVideo = encodeURIComponent(musica.artistName + " " + musica.trackName + " audio");
-            conteudo.innerHTML =                 `<div class="artist-card">
+            conteudo.innerHTML = `
+                <div class="artist-card">
                     <img src="${musica.artworkUrl100.replace('100x100', '400x400')}" class="artist-photo">
                     <div class="song-info">
                         <span class="song-title">${musica.trackName}</span>
@@ -64,20 +65,23 @@
                 </div>
 
                 <div class="lyrics-container">
-                    <button class="btn-translation" onclick="alert('Tradução em breve!')">Ver Tradução</button>
-                    <div id="textoLetra" style="white-space: pre-wrap;">Carregando letra...</div>
-                </div>`;
+                    <button class="btn-translation" onclick="alert('Tradução sendo processada...')">Ver Tradução</button>
+                    <div id="textoLetra" style="white-space: pre-wrap; font-size: 16px;">Buscando letra oficial...</div>
+                </div>
+            `;
         }
 
         function buscarLetraReal(artista, musica) {
             const areaTexto = document.getElementById('textoLetra');
-            // Tentando API alternativa para maior estabilidade
+            // Tentativa na API Lyrics.ovh com o nome limpo
             fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`)
             .then(res => res.json())
             .then(data => {
-                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não encontrada para esta busca simplificada.";
+                areaTexto.innerText = data.lyrics ? data.lyrics : "Letra não disponível para esta busca simplificada.";
             })
-            .catch(() => areaTexto.innerText = "Servidor de letras ocupado. Tente novamente em instantes.");
+            .catch(() => {
+                areaTexto.innerText = "O servidor de letras está instável. Tente outra música!";
+            });
         }
     </script>
 </body>
