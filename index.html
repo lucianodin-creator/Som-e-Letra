@@ -37,7 +37,7 @@
                         const musica = data.results[0];
                         status.innerText = "";
                         mostrarInterface(musica);
-                        // Limpando o nome do artista para a busca da letra ser mais precisa
+                        // Limpando nomes extras para busca da letra
                         const artistaPrincipal = musica.artistName.split(',')[0].split('&')[0].trim();
                         buscarLetraReal(artistaPrincipal, musica.trackName);
                     } else {
