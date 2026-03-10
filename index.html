@@ -2,96 +2,110 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOM E LETRA - PREMIUM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MORAES SHOP - EDITOR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
-        .nav-bar { background: #1db954; color: #000; padding: 15px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 1000; }
-        .search-box { padding: 15px; background: #121212; display: flex; gap: 8px; }
-        input { flex: 1; padding: 12px; border-radius: 25px; border: none; background: #282828; color: #fff; outline: none; }
-        button { background: #1db954; border: none; border-radius: 25px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-        #player-section { display: none; background: #121212; border-bottom: 2px solid #1db954; }
-        .video-container { width: 100%; aspect-ratio: 16/9; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .letra-box { padding: 25px; line-height: 1.8; color: #fff; font-size: 1.2rem; text-align: center; white-space: pre-wrap; }
-        .letra-titulo { color: #1db954; font-size: 1.5rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
-        .lista { padding: 10px; }
-        .card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #181818; margin-bottom: 8px; border-radius: 8px; cursor: pointer; }
-        .card img { width: 90px; height: 60px; border-radius: 4px; object-fit: cover; }
-        .titulo { font-size: 14px; font-weight: bold; }
+        :root { --fundo: #0f172a; --barra-azul: #2563eb; --card: #1e293b; --gold: #fbbf24; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--fundo); font-family: sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { background: var(--card); padding: 0 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; height: 60px; flex-shrink: 0; }
+        
+        #main-view { flex: 1; overflow-y: auto; background: #334155; display: flex; flex-direction: column; align-items: center; width: 100%; padding-bottom: 120px; }
+        
+        .welcome-box { margin: auto; text-align: center; background: var(--card); padding: 30px 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid var(--barra-azul); }
+        
+        canvas { max-width: 95%; height: auto !important; display: none; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px; }
+
+        /* A BARRA AZUL DOS SONHOS */
+        .dream-toolbar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--barra-azul); display: flex; justify-content: space-around; align-items: center; height: 105px; padding-bottom: 20px; z-index: 9999; box-shadow: 0 -5px 25px rgba(0,0,0,0.4); }
+        
+        .btn-dream { background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; opacity: 0.4; pointer-events: none; }
+        .btn-dream.ativo { opacity: 1; pointer-events: auto; }
+        
+        .btn-dream i { font-size: 1.8rem; }
+        .btn-dream span { font-size: 0.8rem; font-weight: bold; }
+        
+        .icon-branco { color: #ffffff !important; }
+        .btn-assinar i { font-size: 2.2rem; }
     </style>
 </head>
 <body>
-    <div class="nav-bar">🎧 SOM E LETRA</div>
-    <div id="player-section">
-        <div class="video-container" id="player-wrapper"></div>
-        <div class="letra-box">
-            <div id="musica-atual" class="letra-titulo"></div>
-            <div id="texto-letra">Aguardando...</div>
+
+    <div class="header">
+        <div style="font-weight: bold; color: #60a5fa;">MORAES SHOP <span style="color:var(--gold); font-size: 0.7rem;">PRO</span></div>
+        <div style="background:#0f172a; padding: 4px 12px; border-radius: 20px; font-size: 0.65rem; border: 1px solid #334155;">V3 RESET</div>
+    </div>
+
+    <div id="main-view">
+        <div class="welcome-box" id="box-upload">
+            <i class="fa fa-file-pdf" style="font-size: 3.5rem; color: #60a5fa; margin-bottom: 15px;"></i>
+            <h2 style="margin:0; font-size: 1.2rem;">ABRIR ARQUIVO</h2>
+            <label style="background:var(--barra-azul); color:white; padding:15px; border-radius:12px; display:inline-block; font-weight:bold; cursor:pointer; width: 100%; margin-top: 20px;">
+                SELECIONAR PDF
+                <input type="file" id="file-in" style="display:none" accept="application/pdf">
+            </label>
         </div>
+        <canvas id="pdf-canvas"></canvas>
     </div>
-    <div class="search-box">
-        <input type="text" id="busca" placeholder="Ex: Djavan - Sina" autocomplete="off">
-        <button onclick="buscar()">BUSCAR</button>
+
+    <div class="dream-toolbar">
+        <button id="assinar" class="btn-dream btn-assinar" onclick="assinarDireto()">
+            <i class="fa fa-pen-nib"></i>
+            <span>Assinar</span>
+        </button>
+        
+        <button id="imprimir" class="btn-dream" onclick="window.print()">
+            <i class="fa fa-print icon-branco"></i>
+            <span>Imprimir</span>
+        </button>
+        
+        <button id="whats" class="btn-dream" onclick="alert('WhatsApp em breve')">
+            <i class="fa fa-share-nodes" style="color:#4ade80"></i>
+            <span>WhatsApp</span>
+        </button>
+        
+        <button class="btn-dream ativo" onclick="location.reload()">
+            <i class="fa fa-rotate-left" style="color: #cbd5e1;"></i>
+            <span>Limpar</span>
+        </button>
     </div>
-    <div id="listaResultados" class="lista"></div>
 
     <script>
-        async function buscar() {
-            const termo = document.getElementById('busca').value;
-            if(!termo) return;
-            const lista = document.getElementById('listaResultados');
-            lista.innerHTML = "<p style='text-align:center; color:#1db954'>Buscando músicas...</p>";
-            try {
-                const res = await fetch(`https://iv.melmac.space/api/v1/search?q=${encodeURIComponent(termo)}&type=video`);
-                const data = await res.json();
-                lista.innerHTML = "";
-                data.forEach(item => {
-                    if(item.type === 'video') {
-                        const div = document.createElement('div');
-                        div.className = 'card';
-                        div.onclick = () => tocar(item.videoId, item.title, item.author);
-                        const thumb = item.videoThumbnails ? item.videoThumbnails[0].url : "";
-                        div.innerHTML = `<img src="${thumb}"><span class="titulo">${item.title}</span>`;
-                        lista.appendChild(div);
-                    }
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        
+        document.getElementById('file-in').onchange = function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function() {
+                const bytes = new Uint8Array(this.result);
+                pdfjsLib.getDocument(bytes).promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const canvas = document.getElementById('pdf-canvas');
+                        const viewport = page.getViewport({scale: 2.8});
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        canvas.style.display = 'block';
+                        document.getElementById('box-upload').style.display = 'none';
+                        document.querySelectorAll('.btn-dream').forEach(btn => btn.classList.add('ativo'));
+                        page.render({canvasContext: canvas.getContext('2d'), viewport: viewport});
+                    });
                 });
-            } catch (e) {
-                lista.innerHTML = "<p style='text-align:center'>Erro na busca.</p>";
-            }
-        }
+            };
+            reader.readAsArrayBuffer(file);
+        };
 
-        async function tocar(id, tituloFull, autor) {
-            document.getElementById('player-section').style.display = "block";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-            
-            // Limpeza radical do título
-            let titulo = tituloFull.replace(/\(Official.*?\)|\[.*?\]|Official Music Video|Clipe Oficial|Video Oficial|Lyrics|Ao Vivo|Live/gi, "").trim();
-            
-            let artista = autor.replace("VEVO", "").replace("- Topic", "").trim();
-            let musica = titulo;
-
-            if (titulo.includes("-")) {
-                const partes = titulo.split("-");
-                artista = partes[0].trim();
-                musica = partes[1].trim();
-            }
-
-            document.getElementById('musica-atual').innerText = `${artista} - ${musica}`;
-            document.getElementById('texto-letra').innerText = "Buscando letra...";
-
-            try {
-                const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artista)}/${encodeURIComponent(musica)}`);
-                const data = await res.json();
-                if (data.lyrics) {
-                    document.getElementById('texto-letra').innerText = data.lyrics;
-                } else {
-                    document.getElementById('texto-letra').innerText = "Letra não encontrada para esta versão.";
-                }
-            } catch {
-                document.getElementById('texto-letra').innerText = "Servidor de letras fora do ar.";
-            }
+        function assinarDireto() {
+            const canvas = document.getElementById('pdf-canvas');
+            if(canvas.style.display === 'none') return;
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL("image/jpeg", 0.95);
+            link.download = 'assinar_agora.jpg';
+            link.click();
         }
     </script>
 </body>
