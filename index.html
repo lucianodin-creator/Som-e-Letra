@@ -2,171 +2,81 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor PDF Profissional - Assinatura e Data</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Editor de Etiquetas - Pincel Ativo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #2c3e50; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .toolbar { background: #1a252f; padding: 15px; display: flex; justify-content: center; align-items: center; gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 10; }
-        .canvas-area { flex: 1; overflow: auto; padding: 40px; display: flex; justify-content: center; align-items: flex-start; background: #34495e; }
-        #pdf-render { background: white; box-shadow: 0 0 20px rgba(0,0,0,0.8); cursor: crosshair; }
-        
-        /* Modal de Assinatura */
-        #signature-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                           background: white; color: #333; padding: 25px; border-radius: 8px; z-index: 1000; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        #sig-canvas { border: 2px dashed #bdc3c7; background: #ecf0f1; border-radius: 4px; margin-bottom: 15px; width: 100%; height: 200px; touch-action: none; }
-        
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-upload { background: #3498db; color: white; }
-        .btn-nav { background: #95a5a6; color: white; }
-        .btn-confirm { background: #27ae60; color: white; width: 100%; margin-top: 10px; }
-        .btn-clear { background: #e74c3c; color: white; font-size: 12px; margin-bottom: 10px; padding: 5px 10px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
-        #page-info { font-size: 14px; font-weight: bold; }
+        body { font-family: sans-serif; margin: 0; background: #1a252f; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .toolbar { background: #111827; padding: 15px; display: flex; justify-content: center; align-items: center; gap: 20px; border-bottom: 2px solid #2563eb; }
+        .canvas-area { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; align-items: flex-start; background: #374151; }
+        #pdf-render { background: white; box-shadow: 0 0 20px rgba(0,0,0,0.5); border-radius: 4px; display: none; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #2563eb; color: white; }
+        .footer-bar { position: fixed; bottom: 0; width: 100%; background: #2563eb; padding: 15px 0; display: flex; justify-content: space-around; }
+        .btn-footer { background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; font-weight: bold; }
+        #msg { margin-top: 100px; text-align: center; color: #9ca3af; }
     </style>
 </head>
 <body>
 
 <div class="toolbar">
     <input type="file" id="file-input" accept="application/pdf" style="display: none;">
-    <button class="btn btn-upload" onclick="document.getElementById('file-input').click()">Abrir PDF</button>
-    
-    <div>
-        <button class="btn btn-nav" id="prev-page">◀</button>
-        <span id="page-info">Página <span id="page-num">0</span> de <span id="page-count">0</span></span>
-        <button class="btn btn-nav" id="next-page">▶</button>
-    </div>
+    <button class="btn" onclick="document.getElementById('file-input').click()">ABRIR DOCUMENTO (PDF)</button>
 </div>
 
 <div class="canvas-area">
+    <div id="msg"><i class="fa fa-file-pdf" style="font-size: 3rem;"></i><p>Selecione um arquivo para editar</p></div>
     <canvas id="pdf-render"></canvas>
 </div>
 
-<div class="overlay" id="overlay"></div>
-<div id="signature-modal">
-    <h3 style="margin-top: 0;">Sua Assinatura</h3>
-    <canvas id="sig-canvas"></canvas>
-    <button class="btn btn-clear" onclick="signaturePad.clear()">Limpar Traço</button>
-    
-    <div style="text-align: left; margin: 10px 0; font-size: 14px; color: #333;">
-        <input type="checkbox" id="check-data" checked>
-        <label for="check-data">Incluir Data e Hora Local</label>
-    </div>
-    
-    <button class="btn btn-confirm" id="btn-confirmar">Finalizar e Baixar PDF</button>
-    <button class="btn" style="background:none; color:#7f8c8d; margin-top: 5px;" onclick="fecharModal()">Cancelar</button>
+<div class="footer-bar">
+    <button class="btn-footer" onclick="baixarParaPincel()">
+        <i class="fa fa-pen-nib" style="font-size: 1.5rem;"></i>
+        <span>ASSINAR AGORA</span>
+    </button>
+    <button class="btn-footer" onclick="location.reload()">
+        <i class="fa fa-trash" style="font-size: 1.5rem;"></i>
+        <span>LIMPAR</span>
+    </button>
 </div>
 
 <script>
-    const { PDFDocument, rgb } = PDFLib;
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    let pdfBytes, pdfDocPdfJs, pageNum = 1;
-    let clickedX, clickedY;
+    let pdfDoc = null;
     const canvas = document.getElementById('pdf-render');
     const ctx = canvas.getContext('2d');
 
-    // Configurar SignaturePad
-    const sigCanvas = document.getElementById('sig-canvas');
-    const signaturePad = new SignaturePad(sigCanvas, {
-        penColor: 'rgb(0, 0, 128)',
-        minWidth: 1.5,
-        maxWidth: 3.5
-    });
-
-    // Carregar Ficheiro
-    document.getElementById('file-input').addEventListener('change', async (e) => {
+    document.getElementById('file-input').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        pdfBytes = await file.arrayBuffer();
-        pdfDocPdfJs = await pdfjsLib.getDocument({data: pdfBytes}).promise;
-        document.getElementById('page-count').textContent = pdfDocPdfJs.numPages;
-        pageNum = 1;
-        renderPage(pageNum);
-    });
-
-    async function renderPage(num) {
-        const page = await pdfDocPdfJs.getPage(num);
-        const viewport = page.getViewport({scale: 1.5});
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        await page.render({canvasContext: ctx, viewport: viewport}).promise;
-        document.getElementById('page-num').textContent = num;
-    }
-
-    // Navegação
-    document.getElementById('prev-page').onclick = () => { if (pageNum > 1) renderPage(--pageNum); };
-    document.getElementById('next-page').onclick = () => { if (pageNum < pdfDocPdfJs.numPages) renderPage(++pageNum); };
-
-    // Clique para posicionar
-    canvas.onclick = (e) => {
-        if (!pdfBytes) return alert("Carregue um PDF primeiro!");
-        
-        const rect = canvas.getBoundingClientRect();
-        clickedX = e.clientX - rect.left;
-        clickedY = e.clientY - rect.top;
-
-        document.getElementById('signature-modal').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-        
-        // Ajustar SignaturePad ao tamanho visível
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        sigCanvas.width = sigCanvas.offsetWidth * ratio;
-        sigCanvas.height = sigCanvas.offsetHeight * ratio;
-        sigCanvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear();
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+                pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
+                const page = await pdfDoc.getPage(1);
+                // Escala 3.0 para alta definição (isso ativa as cores do Motorola)
+                const viewport = page.getViewport({scale: 3.0});
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.display = 'block';
+                document.getElementById('msg').style.display = 'none';
+                await page.render({canvasContext: ctx, viewport: viewport}).promise;
+        };
+        reader.readAsArrayBuffer(file);
     };
 
-    function fecharModal() {
-        document.getElementById('signature-modal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-    }
-
-    // FUSÃO FINAL
-    document.getElementById('btn-confirmar').onclick = async () => {
-        if (signaturePad.isEmpty()) return alert("Desenhe a sua assinatura!");
-
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const pages = pdfDoc.getPages();
-        const targetPage = pages[pageNum - 1];
-        const { width, height } = targetPage.getSize();
-
-        // 1. Converter Assinatura em Imagem
-        const sigImg = await pdfDoc.embedPng(signaturePad.toDataURL());
+    function baixarParaPincel() {
+        if (!canvas.style.display === 'block') return alert("Abra um PDF primeiro");
         
-        // 2. Calcular Coordenadas Reais do PDF (Considerando o Canvas)
-        const pdfX = (clickedX * width) / canvas.width;
-        const pdfY = height - ((clickedY * height) / canvas.height) - 45;
-
-        // 3. Desenhar Assinatura
-        targetPage.drawImage(sigImg, { x: pdfX, y: pdfY, width: 120, height: 50 });
-
-        // 4. Desenhar Data e Hora se solicitado
-        if (document.getElementById('check-data').checked) {
-            const agora = new Date();
-            const txt = ;
-            targetPage.drawText(txt, {
-                x: pdfX,
-                y: pdfY - 12,
-                size: 8,
-                color: rgb(0, 0, 0)
-            });
-        }
-
-        // 5. Salvar e Gerar Download
-        const finalBytes = await pdfDoc.save();
-        const blob = new Blob([finalBytes], { type: "application/pdf" });
+        // Transformar em imagem JPEG pura (qualidade máxima)
         const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = "documento_assinado_final.pdf";
+        link.href = canvas.toDataURL("image/jpeg", 1.0);
+        link.download = "etiqueta_para_assinar.jpg";
         link.click();
         
-        fecharModal();
-    };
+        alert("Arquivo baixado! Abra-o para usar o pincel do celular.");
+    }
 </script>
 
 </body>
