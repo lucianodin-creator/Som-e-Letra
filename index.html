@@ -3,39 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Editor de Etiquetas - Pincel Ativo</title>
+    <title>EDITOR DE ETIQUETAS</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; margin: 0; background: #1a252f; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .toolbar { background: #111827; padding: 15px; display: flex; justify-content: center; align-items: center; gap: 20px; border-bottom: 2px solid #2563eb; }
-        .canvas-area { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; align-items: flex-start; background: #374151; }
-        #pdf-render { background: white; box-shadow: 0 0 20px rgba(0,0,0,0.5); border-radius: 4px; display: none; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #2563eb; color: white; }
-        .footer-bar { position: fixed; bottom: 0; width: 100%; background: #2563eb; padding: 15px 0; display: flex; justify-content: space-around; }
-        .btn-footer { background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; font-weight: bold; }
-        #msg { margin-top: 100px; text-align: center; color: #9ca3af; }
+        :root { --azul: #2563eb; --escuro: #0f172a; }
+        body { margin: 0; background: var(--escuro); font-family: sans-serif; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .header { background: #1e293b; padding: 15px; text-align: center; border-bottom: 2px solid var(--azul); font-weight: bold; }
+        .content { flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; padding: 20px; padding-bottom: 120px; }
+        canvas { max-width: 100%; height: auto !important; display: none; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-abrir { background: var(--azul); color: white; padding: 20px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; margin-top: 50px; width: 80%; }
+        .toolbar { position: fixed; bottom: 0; width: 100%; background: var(--azul); height: 100px; display: flex; justify-content: space-around; align-items: center; padding-bottom: 15px; }
+        .btn-footer { background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: bold; }
+        .btn-footer i { font-size: 1.8rem; }
     </style>
 </head>
 <body>
 
+<div class="header">EDITOR PROFISSIONAL</div>
+
+<div class="content">
+    <button class="btn-abrir" id="btn-fake" onclick="document.getElementById('file-in').click()">
+        <i class="fa fa-file-pdf"></i><br><br>SELECIONAR PDF
+    </button>
+    <input type="file" id="file-in" accept="application/pdf" style="display:none">
+    <canvas id="render"></canvas>
+</div>
+
 <div class="toolbar">
-    <input type="file" id="file-input" accept="application/pdf" style="display: none;">
-    <button class="btn" onclick="document.getElementById('file-input').click()">ABRIR DOCUMENTO (PDF)</button>
-</div>
-
-<div class="canvas-area">
-    <div id="msg"><i class="fa fa-file-pdf" style="font-size: 3rem;"></i><p>Selecione um arquivo para editar</p></div>
-    <canvas id="pdf-render"></canvas>
-</div>
-
-<div class="footer-bar">
-    <button class="btn-footer" onclick="baixarParaPincel()">
-        <i class="fa fa-pen-nib" style="font-size: 1.5rem;"></i>
-        <span>ASSINAR AGORA</span>
+    <button class="btn-footer" onclick="baixarParaAssinar()">
+        <i class="fa fa-pen-nib"></i>
+        <span>ASSINAR</span>
     </button>
     <button class="btn-footer" onclick="location.reload()">
-        <i class="fa fa-trash" style="font-size: 1.5rem;"></i>
+        <i class="fa fa-rotate-left"></i>
         <span>LIMPAR</span>
     </button>
 </div>
@@ -43,41 +44,38 @@
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    let pdfDoc = null;
-    const canvas = document.getElementById('pdf-render');
+    const canvas = document.getElementById('render');
     const ctx = canvas.getContext('2d');
 
-    document.getElementById('file-input').onchange = async (e) => {
+    document.getElementById('file-in').onchange = function(e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
-                pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
-                const page = await pdfDoc.getPage(1);
-                // Escala 3.0 para alta definição (isso ativa as cores do Motorola)
-                const viewport = page.getViewport({scale: 3.0});
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                canvas.style.display = 'block';
-                document.getElementById('msg').style.display = 'none';
-                await page.render({canvasContext: ctx, viewport: viewport}).promise;
+        reader.onload = function() {
+            const data = new Uint8Array(this.result);
+            pdfjsLib.getDocument(data).promise.then(pdf => {
+                pdf.getPage(1).then(page => {
+                    // ESCALA 3.5: Imagem gigante para o Android ativar o PINCEL
+                    const viewport = page.getViewport({scale: 3.5});
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    canvas.style.display = 'block';
+                    document.getElementById('btn-fake').style.display = 'none';
+                    page.render({canvasContext: ctx, viewport: viewport});
+                });
+            });
         };
         reader.readAsArrayBuffer(file);
     };
 
-    function baixarParaPincel() {
-        if (!canvas.style.display === 'block') return alert("Abra um PDF primeiro");
-        
-        // Transformar em imagem JPEG pura (qualidade máxima)
+    function baixarParaAssinar() {
+        if (canvas.style.display === 'none') return alert("Selecione um PDF primeiro!");
         const link = document.createElement('a');
+        // Enviando como JPEG em 100% de qualidade
         link.href = canvas.toDataURL("image/jpeg", 1.0);
-        link.download = "etiqueta_para_assinar.jpg";
+        link.download = "etiqueta_assinatura.jpg";
         link.click();
-        
-        alert("Arquivo baixado! Abra-o para usar o pincel do celular.");
     }
 </script>
-
 </body>
 </html>
